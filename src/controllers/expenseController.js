@@ -36,8 +36,8 @@ exports.addExpense = async (req, res) => {
     }
 }
 
-// Get all Expenses
-exports.getAllExpenses = async (req, res) => {
+
+exports.getAllExpense = async (req, res) => {
     try {
         const userId = req.user?._id;
 
@@ -55,7 +55,7 @@ exports.getAllExpenses = async (req, res) => {
     }
 }
 
-// Delete Expense
+
 exports.deleteExpense = async (req, res) => {
     try {
         const deletedExpense = await Expense.findByIdAndDelete(req.params.id);
@@ -65,39 +65,39 @@ exports.deleteExpense = async (req, res) => {
     }
 }
 
-// Download Expenses Excel
 exports.downloadExpenseExcel = async (req, res) => {
-    try {
-        const userId = req.user?._id;
+  try {
+    const userId = req.user?._id;
 
-        if (!userId) {
-            return res.status(401).json({
-                success: false,
-                message: "Unauthorized access. User not found in request.",
-            });
-        }
-
-        let getExpenses = await Expense.find({ userId }).sort({ date: -1 });
-
-        // Map to required fields
-        getExpenses = getExpenses.map(expense => ({
-            category: expense.category,
-            amount: expense.amount,
-            date: expense.date
-        }));
-
-        // Create workbook & sheet
-        const wb = xlsx.utils.book_new();
-        const ws = xlsx.utils.json_to_sheet(getExpenses);
-        xlsx.utils.book_append_sheet(wb, ws, "EXPENSES");
-
-        // Write Excel file
-        const filePath = "expense_details.xlsx";
-        xlsx.writeFile(wb, filePath);
-
-        // Send file to user
-        res.download(filePath);
-    } catch (error) {
-        res.status(500).json({ message: error.message });
+    if (!userId) {
+      return res.status(401).json({
+        success: false,
+        message: "Unauthorized access. User not found in request.",
+      });
     }
-}
+
+    let getExpenses = await Expense.find({ userId }).sort({ date: -1 });
+
+    getExpenses = getExpenses.map((expense) => ({
+      category: expense.category,
+      amount: expense.amount,
+      date: expense.date,
+    }));
+
+    const wb = xlsx.utils.book_new();
+    const ws = xlsx.utils.json_to_sheet(getExpenses);
+    xlsx.utils.book_append_sheet(wb, ws, "EXPENSES");
+
+    const filePath = "expense_details.xlsx";
+    xlsx.writeFile(wb, filePath);
+
+    res.download(filePath);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+
+
+
+
